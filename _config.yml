@@ -16,3 +16,9 @@ color_scheme: light
 search_enabled: true
 
 favicon_ico: /assets/icon.png
+
+nav_external_links:
+  - title: Taxonomy Browser
+    url: https://aemann01.shinyapps.io/rpocdb_tax_browser/
+    hide_icon: true 
+    opens_in_new_tab: true

@@ -22,6 +22,7 @@ load_github_data <- memoise(function() {
 }, cache = cachem::cache_mem(max_age = 3600))
 
 ui <- fluidPage(
+  title = "rpoCdb Taxonomy Browser",
   titlePanel(
     div(
       img(src = "https://raw.githubusercontent.com/rpoCdb/rpoCdatabase/main/img/rpocdb_logo.png",
@@ -32,8 +33,7 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       numericInput("rows", "Rows per page", 10, min = 1),
-      selectizeInput("columns", "Columns to display", choices = NULL, multiple = TRUE),
-      textInput("filter", "Filter (dplyr syntax)", placeholder = "e.g., price > 100"),
+      textInput("filter", "Filter Taxonomy", placeholder = "e.g., Genus == Streptococcus"),
       downloadButton("download", "Download Filtered Data")
     ),
     mainPanel(
