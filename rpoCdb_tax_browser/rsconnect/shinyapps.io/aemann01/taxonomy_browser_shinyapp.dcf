@@ -1,0 +1,10 @@
+name: taxonomy_browser_shinyapp
+title:
+username: aemann01
+account: aemann01
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 14722867
+bundleId: 10258196
+url: https://aemann01.shinyapps.io/taxonomy_browser_shinyapp/
+version: 1

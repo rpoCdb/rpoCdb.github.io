@@ -2,70 +2,73 @@ library(shiny)
 library(DT)
 library(readr)
 library(httr)
+library(dplyr)
+library(memoise)
+library(cachem)
+library(shinycssloaders)
+
+# Cache setup
+load_github_data <- memoise(function() {
+  github_url <- "https://raw.githubusercontent.com/rpoCdb/rpoCdb.github.io/main/taxonomy_browser_shinyApp/mock_tax.txt"
+  
+  tryCatch({
+    response <- GET(github_url)
+    stop_for_status(response)
+    read_tsv(content(response, as = "text"))
+  }, error = function(e) {
+    showNotification(paste("Error loading data:", e$message), type = "error")
+    NULL
+  })
+}, cache = cachem::cache_mem(max_age = 3600))
 
 ui <- fluidPage(
-  titlePanel("Browse TSV Data from GitHub"),
+  titlePanel(
+    div(
+      img(src = "https://raw.githubusercontent.com/rpoCdb/rpoCdatabase/main/img/rpocdb_logo.png",
+          height = 55, width = 145, style = "margin-right: 15px;"),
+      " Taxonomy Browser"
+    )
+  ),
   sidebarLayout(
     sidebarPanel(
-      helpText("Data is loaded directly from GitHub repository."),
       numericInput("rows", "Rows per page", 10, min = 1),
       selectizeInput("columns", "Columns to display", choices = NULL, multiple = TRUE),
       textInput("filter", "Filter (dplyr syntax)", placeholder = "e.g., price > 100"),
       downloadButton("download", "Download Filtered Data")
     ),
     mainPanel(
-      DTOutput("table"),
+      withSpinner(DTOutput("table")),
       verbatimTextOutput("summary")
     )
   )
 )
 
 server <- function(input, output, session) {
-  # Function to load data from GitHub
-  load_github_data <- function() {
-    # Replace with your actual GitHub raw TSV file URL
-    github_url <- "https://raw.githubusercontent.com/username/repository/main/data.tsv"
+  data <- reactive({
+    progress <- shiny::Progress$new()
+    on.exit(progress$close())
+    progress$set(message = "Loading data", value = 0.3)
     
-    tryCatch({
-      # Download and read the TSV file
-      response <- GET(github_url)
-      stop_for_status(response)
-      
-      # Read TSV content
-      data <- read_tsv(content(response, as = "text"))
-      return(data)
-    }, error = function(e) {
-      showNotification(paste("Error loading data:", e$message), type = "error")
-      return(NULL)
-    })
-  }
-  
-  # Reactive value to store the loaded data
-  data <- reactiveVal(NULL)
-  
-  # Load data when app starts
-  observe({
-    showNotification("Loading data from GitHub...", duration = NULL)
-    loaded_data <- load_github_data()
-    removeNotification()
+    df <- load_github_data()
     
-    if (!is.null(loaded_data)) {
-      data(loaded_data)
-      updateSelectizeInput(session, "columns", choices = names(loaded_data), selected = names(loaded_data))
+    if (!is.null(df)) {
+      df <- df %>%
+        mutate(across(where(is.character), as.factor)) %>%
+        droplevels()
     }
+    
+    progress$set(value = 1)
+    df
   })
   
-  # Filtered data based on user inputs
   filtered_data <- reactive({
     df <- data()
     req(df)
     
-    # Apply column selection
     if (!is.null(input$columns)) {
       df <- df %>% select(all_of(input$columns))
     }
     
-    # Apply filter if provided
     if (input$filter != "") {
       filter_expr <- try(parse(text = input$filter), silent = TRUE)
       if (!inherits(filter_expr, "try-error")) {
@@ -76,33 +79,37 @@ server <- function(input, output, session) {
     return(df)
   })
   
-  # Render the data table
   output$table <- renderDT({
     req(filtered_data())
     datatable(
       filtered_data(),
       extensions = c('Buttons', 'Scroller'),
       options = list(
+        serverSide = TRUE,
+        processing = TRUE,
         pageLength = input$rows,
         scrollX = TRUE,
         scrollY = 500,
+        deferRender = TRUE,
         scroller = TRUE,
         dom = 'Bfrtip',
-        buttons = c('copy', 'csv', 'excel', 'print')
-      )
+        buttons = c('copy', 'csv', 'excel', 'print'),
+        stateSave = TRUE
+      ),
+      selection = 'none',
+      rownames = FALSE,
+      filter = 'top'
     )
   })
   
-  # Render summary statistics
   output$summary <- renderPrint({
     req(filtered_data())
     summary(filtered_data())
   })
   
-  # Download handler
   output$download <- downloadHandler(
     filename = function() {
-      paste0("filtered_data_", Sys.Date(), ".csv")
+      paste0("rpoCdb_data_", Sys.Date(), ".csv")
     },
     content = function(file) {
       write.csv(filtered_data(), file, row.names = FALSE)
