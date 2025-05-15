@@ -6,31 +6,25 @@ nav_order: 1
 
 # Welcome to the *rpoC* Database!  
 
-We're excited to share **Version 2.0** of our curated database, containing `////` unique, high-quality *rpoC* full-gene sequences. This resource supports microbiome research in taxonomic profiling and phylogenetics.
+The current version of the database (**v 2.0**) contains `65,156` unique, high-quality *rpoC* full-length gene sequences, spanning both bacterial and archaeal lineages. This resource supports microbiome and prokaryotic phylogenetic research by enabling precise taxonomic profiling and robust phylogenetic analysis. 
 
-## Key Features
-- **Formats**: Pre-formatted for QIIME2 (`.qza`), Kraken2, DADA2  
-- **Metadata**: NCBI taxonomy IDs, sequence length, absolute rpoC primers sequences by taxonomy  
-- **Download**: [Full database](#) \| [Preformatted databases](#)  
+## Why *rpoC*?
 
-## Why Use *rpoC*?
-🧬 **Single-Copy Gene**:  
-   - Eliminates copy number bias in abundance estimates  
+The *rpoC* gene encodes the β' subunit of the DNA-directed RNA polymerase complex -- an essential enzyme for all cellular life. As a single-copy, protein-coding marker gene, *rpoC* offers distinct advantages for microbial community analysis:
 
-🔍 **Higher Taxonomic Resolution**:  
-   - Distinguishes closely related species better than 16S rRNA  
+🔍 **High Phylogenetic Resolution** - Discriminates taxa at the species and strain level, surpassing limiations of ribosomal RNA genes
 
-💲 **Cost-Effective**:  
-   - Uses standard PCR/sequencing protocols (cheaper than whole-genome)  
+🌍 **Universal Applicability** - Features a conserved domain (RNA_pol_N terminal region) for reliable primer design across diverse prokaryotes
 
-## Who This Database Is For
-🔬 **Microbiome Researchers**:  
-   - Studying bacterial phylogeny/diversity  
-   - Needing standardized *rpoC* references  
+🧬 **Single Copy Locus** - Unlike multi-copy markers (e.g., 16S rRNA), *rpoC* avoids biases in abundance estimates.
 
-🧪 **Bioinformatics Labs**:  
-   - Building custom taxonomic classifiers  
-   - Reproducing published analyses 
+💲 **Cost Effective** - Uses standard PCR/sequencing protocols and is cheaper than whole-genome sequencing
+
+While 16S rRNA sequencing remains a gold standard for microbial surveys, *rpoC* complements and expands the toolkit for researchers seeking finer taxonomic granularity and functional insights into microbial ecology.
+
+## Ready to explore?
+
+This database provides **curated reference sequences** pre-formatted in commonly used microbiome data analysis packages, **user-friendly analysis pipelines**, and **optimzed wet-lab protocols**. Dive in using the menu links to learn more!
 
 ---
 *Cite this database:* [DOI LINK]  
