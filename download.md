@@ -80,9 +80,9 @@ Coming soon!
 
 | Version | Release Date   | Changes                         | Sequence Count |
 |---------|---------------|----------------------------------|----------------|
-| v1.0    | July 10, 2023 | Initial release                  | 15,690        |
-| v1.1    | May 16, 2024  | Updated using GTDB               | 42,941        |
 | v2.0    | ////////////  | //////////////                   | 65,156        |
+| v1.1    | May 16, 2024  | Updated using GTDB               | 42,941        |
+| v1.0    | July 10, 2023 | Initial release                  | 15,690        |
 
 
 [Click here to access previous versions of the database!](https://github.com/rpoCdb/rpoCdatabase/tree/main/02-releases)
