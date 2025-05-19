@@ -11,7 +11,7 @@ library(RColorBrewer)
 
 # Cache setup
 load_github_data <- memoise(function() {
-  github_url <- "https://raw.githubusercontent.com/rpoCdb/rpoCdb.github.io/main/rpoCdb_tax_browser/mock_tax.txt"
+  github_url <- "https://raw.githubusercontent.com/rpoCdb/rpoCdb.github.io/main/rpoCdb_tax_browser/taxonomy-v2.0.txt"
   
   tryCatch({
     response <- GET(github_url)
