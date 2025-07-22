@@ -4,6 +4,8 @@ layout: home
 nav_order: 1
 ---
 
+UNDER CONSTRUCTION!
+
 # Welcome to the *rpoC* Database!  
 
 The current version of the database (**v 2.0**) contains `65,156` unique, high-quality *rpoC* full-length gene sequences, spanning both bacterial and archaeal lineages. This resource supports microbiome and prokaryotic phylogenetic research by enabling precise taxonomic profiling and robust phylogenetic analysis. 
