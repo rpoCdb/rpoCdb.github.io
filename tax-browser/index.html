@@ -1,0 +1,559 @@
+<!doctype html>
+<title>rpoCdb Taxonomy Browser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --purple-900: #3B1E73;
+    --purple-700: #5B21B6;
+    --violet-600: #6D3FD1;
+    --indigo-500: #4C51BF;
+    --blue-600: #2563EB;
+    --blue-400: #2E9DE8;
+    --cyan-400: #17B6D9;
+    --grad-brand: linear-gradient(118deg, var(--purple-900) 0%, var(--purple-700) 24%, var(--indigo-500) 52%, var(--blue-600) 76%, var(--cyan-400) 100%);
+    --bg: #F7F7FB;
+    --bg-raised: #FFFFFF;
+    --ink: #14161C;
+    --ink-muted: #6B7180;
+    --ink-faint: #9A9FB5;
+    --line: #E7E8EF;
+    --line-soft: #EFEFF5;
+    --accent: var(--blue-600);
+    --accent-ink: #ffffff;
+    --accent-soft: #EEF5FD;
+    --shadow: 0 1px 2px rgba(20, 20, 40, 0.05), 0 10px 28px -14px rgba(50, 40, 120, 0.22);
+    --radius-s: 6px;
+    --radius-m: 10px;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121224;
+      --bg-raised: #191933;
+      --ink: #ECEDF7;
+      --ink-muted: #A7ABCB;
+      --ink-faint: #6D7299;
+      --line: #2B2B4A;
+      --line-soft: #21213C;
+      --accent: var(--blue-400);
+      --accent-ink: #0a1020;
+      --accent-soft: #1E2847;
+      --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 10px 32px -14px rgba(0,0,0,0.65);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121224;
+    --bg-raised: #191933;
+    --ink: #ECEDF7;
+    --ink-muted: #A7ABCB;
+    --ink-faint: #6D7299;
+    --line: #2B2B4A;
+    --line-soft: #21213C;
+    --accent: var(--blue-400);
+    --accent-ink: #0a1020;
+    --accent-soft: #1E2847;
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 10px 32px -14px rgba(0,0,0,0.65);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body {
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    padding-inline: 0;
+  }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+  .mono { font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace; font-variant-numeric: tabular-nums; }
+
+  a { color: var(--accent); }
+
+  .wrap {
+    max-width: 1180px;
+    margin-inline: auto;
+    padding-inline: 20px;
+  }
+
+  header.top {
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-raised);
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 20;
+  }
+  .top-inner {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding-block: 16px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-right: auto;
+  }
+  .brand .mark {
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: -0.01em;
+  }
+  .brand .mark em {
+    font-style: normal;
+    background: var(--grad-brand);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .brand .sub {
+    color: var(--ink-muted);
+    font-size: 13px;
+  }
+  nav.top-links { display: flex; gap: 18px; font-size: 13px; }
+  nav.top-links a { color: var(--ink-muted); text-decoration: none; }
+  nav.top-links a:hover { color: var(--accent); }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    margin-block: 22px 18px;
+  }
+  .stat {
+    background: var(--bg-raised);
+    padding: 14px 16px;
+  }
+  .stat .n {
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    display: block;
+  }
+  .stat .l {
+    color: var(--ink-muted);
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+    display: block;
+  }
+
+  .panel {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    box-shadow: var(--shadow);
+  }
+
+  .chart-panel {
+    padding: 18px 20px 16px;
+    margin-bottom: 20px;
+  }
+  .chart-panel h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    margin: 0 0 14px;
+    font-weight: 600;
+  }
+  #phylumChart { display: block; width: 100%; height: auto; overflow: visible; }
+  .bar-label { fill: var(--ink-muted); font-size: 11px; font-family: "JetBrains Mono", monospace; }
+  .bar-value { fill: var(--ink); font-size: 11px; font-family: "JetBrains Mono", monospace; font-weight: 600; }
+  .bar-rect { fill: var(--accent); }
+  .bar-track { fill: var(--line-soft); }
+  .chart-tip {
+    position: fixed;
+    pointer-events: none;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 12px;
+    padding: 6px 9px;
+    border-radius: var(--radius-s);
+    transform: translate(-50%, -130%);
+    white-space: nowrap;
+    z-index: 50;
+    box-shadow: var(--shadow);
+  }
+
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .search-box {
+    position: relative;
+    flex: 1 1 280px;
+    min-width: 200px;
+  }
+  .search-box svg {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+    height: 15px;
+    stroke: var(--ink-faint);
+    pointer-events: none;
+  }
+  #search {
+    width: 100%;
+    padding: 9px 12px 9px 34px;
+    border-radius: var(--radius-s);
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 13.5px;
+    font-family: inherit;
+  }
+  #search:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  select {
+    padding: 9px 10px;
+    border-radius: var(--radius-s);
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .count-pill {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    white-space: nowrap;
+    margin-left: auto;
+  }
+  .count-pill b { color: var(--ink); font-family: "JetBrains Mono", monospace; }
+
+  .table-panel { margin-bottom: 40px; }
+  .tbl-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+    height: 560px;
+    border-radius: var(--radius-m);
+  }
+  table { border-collapse: collapse; width: 100%; min-width: 880px; }
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--bg-raised);
+    text-align: left;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-muted);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    z-index: 5;
+  }
+  thead th:hover { color: var(--ink); }
+  thead th .arrow { opacity: 0.35; margin-left: 3px; font-size: 10px; }
+  thead th.sorted .arrow { opacity: 1; color: var(--accent); }
+  tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    white-space: nowrap;
+    font-size: 13px;
+  }
+  tbody tr:hover td { background: var(--accent-soft); }
+  .tax-name { font-weight: 500; }
+  .placeholder-sp { color: var(--ink-faint); font-style: italic; }
+  .acc-link { color: var(--ink-muted); text-decoration: none; }
+  .acc-link:hover { color: var(--accent); text-decoration: underline; }
+  .spacer-row td { padding: 0; border: none; }
+
+  #loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 560px;
+    color: var(--ink-muted);
+    gap: 10px;
+    font-size: 13.5px;
+  }
+  .spin {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--line);
+    border-top-color: var(--accent);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-block: 22px 40px;
+    color: var(--ink-muted);
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+  footer a { color: var(--ink-muted); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 2px; }
+  footer a:hover { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    .top-inner { padding-block: 12px; }
+    nav.top-links { display: none; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); }
+    .stat { padding: 10px 12px; }
+    .stat .n { font-size: 18px; }
+  }
+</style>
+
+<header class="top">
+  <div class="wrap top-inner">
+    <div class="brand">
+      <span class="mark">rpoC<em>db</em></span>
+      <span class="sub">Taxonomy Browser</span>
+    </div>
+    <nav class="top-links">
+      <a href="https://rpocdb.github.io/" target="_blank" rel="noopener">rpoCdb.github.io</a>
+      <a href="https://github.com/rpoCdb/rpoCdatabase" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="stats-row" id="statsRow" aria-label="Database summary statistics"></div>
+
+  <section class="panel chart-panel">
+    <h2>Genome representatives by phylum (top 15)</h2>
+    <svg id="phylumChart" viewBox="0 0 1000 340" role="img" aria-label="Bar chart of genome counts per phylum"></svg>
+  </section>
+
+  <section class="table-panel">
+    <div class="controls">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="search" type="text" placeholder="Search any rank — e.g. Lachnospiraceae, Bacillus, Streptococcus_pneumoniae…" autocomplete="off">
+      </div>
+      <select id="phylumFilter" aria-label="Filter by phylum">
+        <option value="">All phyla</option>
+      </select>
+      <span class="count-pill" id="countPill"></span>
+    </div>
+
+    <div class="panel">
+      <div class="tbl-scroll" id="tblScroll">
+        <div id="loading"><span class="spin"></span> Loading 113,471 taxonomic paths…</div>
+        <table id="tbl" hidden>
+          <thead>
+            <tr>
+              <th data-k="phylum">Phylum <span class="arrow">▲▼</span></th>
+              <th data-k="class_">Class <span class="arrow">▲▼</span></th>
+              <th data-k="order">Order <span class="arrow">▲▼</span></th>
+              <th data-k="family">Family <span class="arrow">▲▼</span></th>
+              <th data-k="genus">Genus <span class="arrow">▲▼</span></th>
+              <th data-k="species">Species <span class="arrow">▲▼</span></th>
+              <th data-k="genomes" class="mono">Genomes <span class="arrow">▲▼</span></th>
+              <th>Representative</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    rpoCdb v3.1 — 178,199 bacterial reference genomes (GTDB r232), reduced to 113,471 unique taxonomic
+    paths after in-silico PCR deduplication and lowest-common-ancestor collapse of byte-identical rpoC amplicons.
+    "Representative" links to the example genome accession on NCBI for that taxonomic path. Species names ending
+    in a placeholder code (e.g. <span class="mono">sp900xxxxxx</span>) denote GTDB genomospecies without a validly
+    published binomial. Archaea are not included here — a dedicated archaeal database is in preparation.
+    Data and pipeline: <a href="https://github.com/rpoCdb/rpoCdatabase" target="_blank" rel="noopener">rpoCdb/rpoCdatabase</a>.
+  </div>
+</footer>
+
+<div class="chart-tip" id="chartTip" hidden></div>
+
+<script>
+(async function () {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+  // ---------- Load data ----------
+  const [taxdata, phylumSummary, stats] = await Promise.all([
+    fetch('taxdata.json').then(r => r.json()),
+    fetch('phylum_summary.json').then(r => r.json()),
+    fetch('stats.json').then(r => r.json()),
+  ]);
+
+  const D = taxdata.dicts;
+  // rows: [domainIdx, phylumIdx, classIdx, orderIdx, familyIdx, genusIdx, species, genomes, accession]
+  const rows = taxdata.rows.map(r => ({
+    phylum: D.phylum[r[1]], class_: D.class_[r[2]],
+    order: D.order[r[3]], family: D.family[r[4]], genus: D.genus[r[5]],
+    species: r[6], genomes: r[7], accession: r[8],
+    _search: (D.phylum[r[1]] + ' ' + D.class_[r[2]] + ' ' + D.order[r[3]] + ' ' +
+              D.family[r[4]] + ' ' + D.genus[r[5]] + ' ' + r[6]).toLowerCase().replace(/_/g, ' '),
+  }));
+
+  // ---------- Stats row ----------
+  const statDefs = [
+    [stats.total_genomes, 'Genomes'],
+    [stats.unique_paths, 'Taxonomic paths'],
+    [stats.named_species, 'Named species'],
+    [stats.genera, 'Genera'],
+    [stats.families, 'Families'],
+    [stats.phyla, 'Phyla'],
+  ];
+  $('#statsRow').innerHTML = statDefs.map(([n, l]) =>
+    `<div class="stat"><span class="n mono">${n.toLocaleString()}</span><span class="l">${l}</span></div>`
+  ).join('');
+
+  // ---------- Phylum bar chart ----------
+  (function drawChart() {
+    const svg = $('#phylumChart');
+    const W = 1000, H = 340;
+    const padL = 190, padR = 70, padT = 6, padB = 6;
+    const rowH = (H - padT - padB) / phylumSummary.length;
+    const max = Math.max(...phylumSummary.map(d => d[1]));
+    const barMaxW = W - padL - padR;
+    const tip = $('#chartTip');
+
+    let svgContent = '';
+    phylumSummary.forEach((d, i) => {
+      const [name, count] = d;
+      const y = padT + i * rowH;
+      const barH = rowH * 0.58;
+      const barY = y + (rowH - barH) / 2;
+      const w = (count / max) * barMaxW;
+      svgContent += `
+        <rect class="bar-track" x="${padL}" y="${barY}" width="${barMaxW}" height="${barH}" rx="3"></rect>
+        <rect class="bar-rect" data-name="${name}" data-count="${count}"
+              x="${padL}" y="${barY}" width="${w}" height="${barH}" rx="3" style="cursor:pointer"></rect>
+        <text class="bar-label" x="${padL - 10}" y="${y + rowH / 2 + 4}" text-anchor="end">${name}</text>
+        <text class="bar-value" x="${padL + w + 8}" y="${y + rowH / 2 + 4}">${count.toLocaleString()}</text>
+      `;
+    });
+    svg.innerHTML = svgContent;
+
+    $$('.bar-rect', svg).forEach(rect => {
+      rect.addEventListener('mousemove', e => {
+        tip.hidden = false;
+        tip.style.left = e.clientX + 'px';
+        tip.style.top = e.clientY + 'px';
+        tip.textContent = `${rect.dataset.name}: ${Number(rect.dataset.count).toLocaleString()} genomes`;
+      });
+      rect.addEventListener('mouseleave', () => { tip.hidden = true; });
+      rect.addEventListener('click', () => {
+        $('#phylumFilter').value = rect.dataset.name;
+        applyFilters();
+      });
+    });
+  })();
+
+  // ---------- Filters ----------
+  const phylumSel = $('#phylumFilter');
+  [...D.phylum].sort().forEach(p => { if (p) phylumSel.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`); });
+
+  let filtered = rows;
+  let sortKey = 'genomes', sortDir = -1;
+
+  function applyFilters() {
+    const q = $('#search').value.trim().toLowerCase().replace(/[_\s]+/g, ' ');
+    const phy = phylumSel.value;
+    filtered = rows.filter(r => {
+      if (phy && r.phylum !== phy) return false;
+      if (q && !r._search.includes(q)) return false;
+      return true;
+    });
+    sortRows();
+    $('#countPill').innerHTML = `<b>${filtered.length.toLocaleString()}</b> of ${rows.length.toLocaleString()} taxonomic paths`;
+    renderVisible(true);
+  }
+
+  function sortRows() {
+    filtered = filtered.slice().sort((a, b) => {
+      let av = a[sortKey], bv = b[sortKey];
+      if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
+      if (av < bv) return -1 * sortDir;
+      if (av > bv) return 1 * sortDir;
+      return 0;
+    });
+  }
+
+  $$('thead th[data-k]').forEach(th => {
+    th.addEventListener('click', () => {
+      const k = th.dataset.k;
+      if (sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = k === 'genomes' ? -1 : 1; }
+      $$('thead th').forEach(h => h.classList.remove('sorted'));
+      th.classList.add('sorted');
+      th.querySelector('.arrow').textContent = sortDir === 1 ? '▲' : '▼';
+      sortRows();
+      renderVisible(true);
+    });
+  });
+
+  let searchTimer;
+  $('#search').addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applyFilters, 140);
+  });
+  phylumSel.addEventListener('change', applyFilters);
+
+  // ---------- Virtualized table ----------
+  const scrollEl = $('#tblScroll');
+  const tbody = $('#tbody');
+  const ROW_H = 35;
+  const BUFFER = 8;
+
+  function speciesCell(sp) {
+    const isPlaceholder = /_sp\d{4,}$/.test(sp);
+    return isPlaceholder
+      ? `<span class="placeholder-sp mono">${sp}</span>`
+      : `<span class="tax-name">${sp.replace(/_/g, ' ')}</span>`;
+  }
+
+  function renderVisible(reset) {
+    const total = filtered.length;
+    const viewH = scrollEl.clientHeight;
+    const scrollTop = reset ? 0 : scrollEl.scrollTop;
+    if (reset) scrollEl.scrollTop = 0;
+    const startIdx = Math.max(0, Math.floor(scrollTop / ROW_H) - BUFFER);
+    const endIdx = Math.min(total, Math.ceil((scrollTop + viewH) / ROW_H) + BUFFER);
+
+    let html = '';
+    if (startIdx > 0) html += `<tr class="spacer-row"><td colspan="8" style="height:${startIdx * ROW_H}px"></td></tr>`;
+    for (let i = startIdx; i < endIdx; i++) {
+      const r = filtered[i];
+      html += `<tr style="height:${ROW_H}px">
+        <td>${r.phylum}</td>
+        <td>${r.class_}</td>
+        <td>${r.order}</td>
+        <td>${r.family}</td>
+        <td class="tax-name">${r.genus}</td>
+        <td>${speciesCell(r.species)}</td>
+        <td class="mono">${r.genomes}</td>
+        <td><a class="acc-link mono" href="https://www.ncbi.nlm.nih.gov/datasets/genome/${r.accession}/" target="_blank" rel="noopener">${r.accession}</a></td>
+      </tr>`;
+    }
+    if (endIdx < total) html += `<tr class="spacer-row"><td colspan="8" style="height:${(total - endIdx) * ROW_H}px"></td></tr>`;
+    tbody.innerHTML = html;
+  }
+
+  scrollEl.addEventListener('scroll', () => renderVisible(false));
+  window.addEventListener('resize', () => renderVisible(false));
+
+  // ---------- Boot ----------
+  $('#loading').hidden = true;
+  $('#tbl').hidden = false;
+  applyFilters();
+})();
+</script>
